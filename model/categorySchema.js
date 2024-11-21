@@ -3,12 +3,14 @@ import mongoose from "mongoose";
 const categorySchema = new mongoose.Schema({
     name:{
         type:String,
-        require:[true, "channel name is required"]
+        require:[true, "Category name is required"],
+        unique:[true, "This name already exits"],
+        trim:true
     },
-    ChanelId:{
+    ChannelIds:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Channel',
-        require:[true, "Server id is required"]
+        require:[true, "Channel id is required"]
     }
 },
 {timestamps:true});

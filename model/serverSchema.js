@@ -38,10 +38,10 @@ const serverSchema = new mongoose.Schema(
       required: [true, 'Join code is required'],
       unique: true,
     },
-    channels: [
+    categories: [
       {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Channel',
+        ref: 'Category',
       },
     ],
     isPrivate: {
