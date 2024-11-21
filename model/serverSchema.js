@@ -38,6 +38,12 @@ const serverSchema = new mongoose.Schema(
       required: [true, 'Join code is required'],
       unique: true,
     },
+    inviteLinks: [
+      {
+        type: String,
+        require:[true,'invite link required']
+      },
+    ],
     categories: [
       {
         type: mongoose.Schema.Types.ObjectId,
@@ -60,7 +66,7 @@ const serverSchema = new mongoose.Schema(
     settings: {
       maxMembers: {
         type: Number,
-        default: 1000, // Default max members
+        default: 1000, 
       }
     },
   },
