@@ -1,29 +1,20 @@
-import userRepository from "../repositories/userRepository"
-
-
+import userRepository from "../repositories/userRepository.js"
 
 export const signUpService = async (data) =>{
     try {
-        const response = await userRepository.create(data);
-        if(!response){
-            console.log("sign up service error");
-        }
+        return await userRepository.create(data);
     } catch (error) {
-        console.log(error);
+         throw {error:error}
     }
 };
 
 export const signInService = async (data) => {
     try {
         const user = await userRepository.getByEmail(data.email);
-        if(!user){
-            console.log('sign in service error');
-        }
         const isMatch = bcrypt.compareSync(data.password, user.password);
         if(!isMatch){
-            console.log('signUp password not matched')
+            throw new Error("Password invalid")
         }
-
         return {
             username:user.username,
             email:user.email,
@@ -31,6 +22,6 @@ export const signInService = async (data) => {
             token: createJWT({id:user._id, email:user.email})
         }
     } catch (error) {
-        console.log(error);
+       return error;
     }
 }

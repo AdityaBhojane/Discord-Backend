@@ -1,9 +1,9 @@
 import mongoose from "mongoose";
-import { Schema, string } from "zod";
+import bcrypt from 'bcryptjs'
 
 const userSchema = new mongoose.Schema({
     username:{
-        type:string,
+        type:String,
         require:[true, 'schema : username is required'],
         unique:[true, 'schema : username already exist'],
         minLength:[3, 'schema : must be at least 3 characters '],
@@ -13,11 +13,11 @@ const userSchema = new mongoose.Schema({
         ]
     },
     password:{
-        type:string,
+        type:String,
         require:[true , 'schema : password is required'],
     },
     email:{
-        type:string,
+        type:String,
         require:[true, 'schema : email is required'],
         unique:[true, 'schema : email is already exits'],
         match:[
@@ -26,7 +26,7 @@ const userSchema = new mongoose.Schema({
         ]
     },
     avatar:{
-        type:string
+        type:String
     }
 },
 {timestamps:true}

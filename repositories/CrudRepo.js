@@ -1,4 +1,4 @@
-async function crudRepository(model) {
+function crudRepository(model) {
     return {
         create: async(data)=> await model.create(data),
         getAll: async()=> await model.find(),

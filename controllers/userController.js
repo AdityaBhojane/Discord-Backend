@@ -1,17 +1,19 @@
-import { signInService, signUpService } from "../services/userService"
+import { signInService, signUpService } from "../services/userService.js"
 
 
 
 export const signUp = async (req,res)=>{
     try {
         const user = await signUpService(req.body);
-        return res.status(200).json({
+        return res.json({
             success:true,
             message:"user create successfully",
             data:user
         })
     } catch (error) {
-        console.log(error)
+        return res.status(211).json({
+            message:error
+        })
     }
 };
 export const signIn = async (req,res)=>{
