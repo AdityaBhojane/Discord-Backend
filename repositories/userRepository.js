@@ -5,7 +5,7 @@ import crudRepository from "./CrudRepo.js";
 
 const userRepository = {
     ...crudRepository(UserSchema),
-    getByEmail:async (email)=> await UserSchema.find({email}),
+    getByEmail:async (email)=> await UserSchema.findOne({email}),
     getByUsername: async (username)=> await UserSchema.find({username})
 };
 
