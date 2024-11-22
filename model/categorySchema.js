@@ -4,13 +4,15 @@ const categorySchema = new mongoose.Schema({
     name:{
         type:String,
         require:[true, "Category name is required"],
-        unique:[true, "This name already exits"],
         trim:true
+    },
+    serverId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:'Server',
     },
     ChannelIds:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Channel',
-        require:[true, "Channel id is required"]
     }
 },
 {timestamps:true});

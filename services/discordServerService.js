@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import discordServerRepository from "../repositories/discordServerRepository.js";
+
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
 
@@ -27,7 +28,7 @@ export const CreateServerService = async (serverData) => {
 
     const response = await discordServerRepository.create({
       name: serverData.name,
-      description: workspaceData.description,
+      description: serverData.description,
       joinCode,
     });
 
@@ -35,7 +36,6 @@ export const CreateServerService = async (serverData) => {
         response._id,
         serverData.owner,
         'admin'
-
     );
 
     const updatedServer = await discordServerRepository.addCategoryToServer(
@@ -45,11 +45,22 @@ export const CreateServerService = async (serverData) => {
     return updatedServer
   } catch (error) {
     if(error.name == "ValidationError"){
-        throw new CustomError("Validation Error", StatusCodes.BAD_REQUEST)
+        throw new CustomError("Validation Error", StatusCodes.BAD_REQUEST,error)
     }
     if(error.name === 'MongoServerError' && error.code === 11000){
-        throw new CustomError("server with a same name already exits", StatusCodes.BAD_REQUEST)
+        throw new CustomError("server with a same name already exits", StatusCodes.BAD_REQUEST,error)
     }
     throw error
   }
 };
+
+export const getAllServersUserPartOfService = async (userId)=>{
+  try {
+    const response = await discordServerRepository.getAllServersUserPartOf(userId);
+    console.log(response);
+    return response;
+  } catch (error) {
+    console.log("get service error",error)
+    throw error
+  }
+}

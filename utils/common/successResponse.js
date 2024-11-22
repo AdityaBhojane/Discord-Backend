@@ -1,4 +1,4 @@
-export default function successResponse(msg,data){
+export default function customSuccessResponse(msg,data){
     return {
         success:true,
         message:msg,

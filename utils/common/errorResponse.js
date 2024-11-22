@@ -1,5 +1,6 @@
-export default function CustomErrorResponse(error){
+export default function customErrorResponse(msg,error={}){
     return {
+        message:msg,
         success:false,
         error:error,
     }

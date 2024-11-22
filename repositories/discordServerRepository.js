@@ -4,10 +4,11 @@ import CustomError from "../utils/CustomError.js";
 import crudRepository from "./CrudRepo.js";
 import channelRepository from "./channelRepository.js";
 import categoryRepository from "./categoryRepository.js";
+import User from "../model/userSchema.js";
 
 const discordServerRepository = {
   ...crudRepository(Server),
-  addUserToServer: async (serverId, userId, role = null) => {
+  addUserToServer: async (serverId, userId, role) => {
     const server = await Server.findById(serverId);
     if (!server) {
       throw new CustomError("server not found", StatusCodes.NOT_FOUND);
@@ -23,7 +24,7 @@ const discordServerRepository = {
       throw new CustomError("user already added on the server");
     }
     server.members.push({
-      userId,
+      memberId:userId,
       role,
     });
 
@@ -31,17 +32,14 @@ const discordServerRepository = {
 
     return server;
   },
-  getUsers: () => {},
-  deleteUsers: () => {},
-  getAllUsers: () => {},
   addCategoryToServer: async (serverId,categoryName) => {
     const server = await Server.findById(serverId).populate("categories");
-
+    
     if (!server) {
       throw new CustomError("Server not found", getStatusCode.NOT_FOUND);
     }
 
-    const isCategoryAlreadyPartOfServer = server.channels.find(
+    const isCategoryAlreadyPartOfServer = server.categories.find(
       (category) => category.name === categoryName
     );
 
@@ -62,7 +60,14 @@ const discordServerRepository = {
 
     return server;
   },
+  getAllServersUserPartOf: async(userId)=>{
+    const response = await Server.find({'members.memberId': userId});
+    return response;
+  },
   deleteCategory: () => {},
+  getUsers: () => {},
+  deleteUsers: () => {},
+  getAllUsers: () => {},
 };
 
 export default discordServerRepository;

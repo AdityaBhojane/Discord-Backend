@@ -14,7 +14,7 @@ app.get('/ping',(req,res)=>{
     })
 });
 
-app.listen(3000, ()=> {
+app.listen(3001, ()=> {
     console.log("server is running");
     connectDB();
 })

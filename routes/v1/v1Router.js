@@ -5,6 +5,6 @@ import serverRouter from './discordServer.js'
 const router = express.Router();
 
 router.use('/users', userRouter);
-router.use('/server', serverRouter)
+router.use('/servers', serverRouter)
 
 export default router;
