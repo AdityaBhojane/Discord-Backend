@@ -102,3 +102,11 @@ export const updateServerService = async(serverId,serverData,userId)=>{
     throw error
   }
 }
+
+export const getServerService = async(serverId,userId)=>{};
+
+export const addMemberToServerService = async(serverId,userId)=>{};
+
+export const addCategoryToServerService = async(serverId,userId)=>{};
+
+export const getServerByJoinCodeService = async()=>{};
