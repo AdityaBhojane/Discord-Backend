@@ -3,6 +3,7 @@ import discordServerRepository from "../repositories/discordServerRepository.js"
 
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
+import categoryRepository from "../repositories/categoryRepository.js";
 
 // helper func
 const isUserAdminOfServer = (server, userId) => {
@@ -61,6 +62,43 @@ export const getAllServersUserPartOfService = async (userId)=>{
     return response;
   } catch (error) {
     console.log("get service error",error)
+    throw error
+  }
+}
+
+export const deleteServerService = async(serverId, userId)=>{
+  try {
+    const server = await discordServerRepository.getById(serverId);
+    if(!server){
+      throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
+    };
+    const isValidAdmin = await isUserAdminOfServer(serverId, userId);
+    if(!isValidAdmin){
+      throw new CustomError("User is not allowed to delete the workspace", StatusCodes.BAD_REQUEST, "Admin role required")
+    }
+    await categoryRepository.DeleteMany(server.categories);
+    const response = await discordServerRepository.Delete(serverId);
+    return response;
+  } catch (error) {
+    console.log("delete service", error);
+    throw error;
+  }
+}
+
+export const updateServerService = async(serverId,serverData,userId)=>{
+  try {
+    const server = await discordServerRepository.getById(serverId);
+    if(!server){
+      throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
+    }
+    const isValidAdmin = await isUserAdminOfServer(serverId, userId);
+    if(!isValidAdmin){
+      throw new CustomError("User is not allowed to delete the workspace", StatusCodes.BAD_REQUEST, "Admin role required")
+    }
+    const response = await discordServerRepository.Update(serverId,serverData)
+    return response
+  } catch (error) {
+    console.log("update service",error)
     throw error
   }
 }
