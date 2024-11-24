@@ -1,5 +1,5 @@
 import { StatusCodes } from "http-status-codes";
-import { CreateServerService, getAllServersUserPartOfService } from "../services/discordServerService.js";
+import { CreateServerService, deleteServerService, getAllServersUserPartOfService, getServerService, updateServerService } from "../services/discordServerService.js";
 import customSuccessResponse from "../utils/common/successResponse.js";
 import customErrorResponse from "../utils/common/errorResponse.js";
 
@@ -34,10 +34,10 @@ export const getAllServersUserPartOfController = async(req,res)=>{
   }
 }
 
-export const  deleteServerService = async(req,res)=>{
+export const  deleteServerController = async(req,res)=>{
   try {
-    const response = await discordServerService.deleteServerService(
-      req.params.serveId,
+    const response = await deleteServerService(
+      req.params.serverId,
       req.user
     );
 
@@ -49,10 +49,10 @@ export const  deleteServerService = async(req,res)=>{
   }
 }
 
-export const  updateServerService = async(req,res)=>{
+export const  updateServerController= async(req,res)=>{
   try {
-    const response = await discordServerService.updateServerService(
-      req.serveId,
+    const response = await updateServerService(
+      req.serverId,
       req.body,
       req.user
     );
@@ -63,9 +63,9 @@ export const  updateServerService = async(req,res)=>{
   }
 }
 
-export const  getServerService= async(req,res)=>{
+export const  getServerController= async(req,res)=>{
     try {
-      const response = await discordServerService.getServerService(req.params.serveId, req.user);
+      const response = await getServerService(req.params.serverId, req.user);
       return res.status(StatusCodes.OK).json(customSuccessResponse('server fetched successfully', response))
     } catch (error) {
       console.log("get server controller error", error)
