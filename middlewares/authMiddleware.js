@@ -19,7 +19,7 @@ export default async function isAuthenticate(req, res, next) {
         .json(customErrorResponse("invalid auth token provided"));
     }
     const user = await userRepository.getById(response.id);
-    req.user = user._id;
+    req.user = user.id;
     // console.log(response,user._id)
     next();
   } catch (error) {

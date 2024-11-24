@@ -52,14 +52,14 @@ export const  deleteServerController = async(req,res)=>{
 export const  updateServerController= async(req,res)=>{
   try {
     const response = await updateServerService(
-      req.serverId,
+      req.params.serverId,
       req.body,
       req.user
     );
     return res.status(StatusCodes.OK).json(customSuccessResponse('server updated successfully', response))
   } catch (error) {
     console.log("update controller error", error);
-    customErrorResponse("something is wrong with update service", error)
+    return res.status(StatusCodes.BAD_REQUEST).json(customErrorResponse("something is wrong while updating", error))
   }
 }
 
@@ -68,6 +68,7 @@ export const  getServerController= async(req,res)=>{
       const response = await getServerService(req.params.serverId, req.user);
       return res.status(StatusCodes.OK).json(customSuccessResponse('server fetched successfully', response))
     } catch (error) {
-      console.log("get server controller error", error)
+      console.log("get server controller error", error);
+      return res.status(StatusCodes.BAD_REQUEST).json(customErrorResponse("something is wrong while getting details", error))
     }
 }

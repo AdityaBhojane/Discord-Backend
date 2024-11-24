@@ -10,12 +10,12 @@ import errorMap from "zod/locales/en.js";
 const isUserAdminOfServer = (server, userId) => {
   return server.members.find(
     (members) =>
-      members.memberId._id.toString() === userId && members.role == "admin"
+      members.memberId.toString() === userId && members.role == "admin"
   );
 };
 
 const isUserPartOfServer = (server, userId) => {
-  return server.find((member) => member.memberId.toString() == userId);
+  return server.members.find((members) => members.memberId.toString() == userId);
 };
 
 const isChannelIsPartOfServer = (server, ChannelName) => {
@@ -73,12 +73,13 @@ export const deleteServerService = async(serverId, userId)=>{
     if(!server){
       throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
     };
-    const isValidAdmin = await isUserAdminOfServer(serverId, userId);
+    const isValidAdmin = await isUserAdminOfServer(server, userId);
     if(!isValidAdmin){
-      throw new CustomError("User is not allowed to delete the workspace", StatusCodes.BAD_REQUEST, "Admin role required")
-    }
-    await categoryRepository.DeleteMany(server.categories);
-    const response = await discordServerRepository.Delete(serverId);
+      throw new CustomError("User is not allowed to delete the server", StatusCodes.BAD_REQUEST, "Admin role required")
+    };
+    await categoryRepository.deleteMany(server.categories);
+    console.log(serverId)
+    const response = await discordServerRepository.delete(serverId);
     return response;
   } catch (error) {
     console.log("delete service", error);
@@ -94,9 +95,9 @@ export const updateServerService = async(serverId,serverData,userId)=>{
     }
     const isValidAdmin = await isUserAdminOfServer(server, userId);
     if(!isValidAdmin){
-      throw new CustomError("User is not allowed to delete the workspace", StatusCodes.BAD_REQUEST, "Admin role required")
+      throw new CustomError("User is not allowed to update the server", StatusCodes.BAD_REQUEST, "Admin role required")
     }
-    const response = await discordServerRepository.Update(serverId,serverData)
+    const response = await discordServerRepository.update(serverId,serverData)
     return response
   } catch (error) {
     console.log("update service",error)
@@ -110,6 +111,7 @@ export const getServerService = async(serverId,userId)=>{
     if(!server){
       throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
     }
+    console.log("LOG CHECK",server)
     const isMember = isUserPartOfServer(server,userId)
     if(!isMember){
       throw new CustomError('User is not a part of server', StatusCodes.FORBIDDEN, "Not allowed")

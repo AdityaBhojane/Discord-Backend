@@ -22,6 +22,6 @@ router.post(
 router.get("/", isAuthenticate, getAllServersUserPartOfController);
 router.delete("/:serverId", isAuthenticate, deleteServerController);
 router.put("/:serverId", isAuthenticate, updateServerController);
-router.get("/serverId", getServerController);
+router.get("/:serverId",isAuthenticate, getServerController);
 
 export default router;
