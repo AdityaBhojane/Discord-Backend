@@ -14,7 +14,7 @@ export const createDiscordServerController = async (req, res) => {
         .status(StatusCodes.CREATED)
         .json(customSuccessResponse("server created successfully",response));
     } catch (error) {
-      console.log(error);
+      console.log('create server controller error',error);
       if (error.statusCode) {
         return res.status(error.statusCode).json(customErrorResponse("something is wrong",error));
       }
@@ -34,3 +34,40 @@ export const getAllServersUserPartOfController = async(req,res)=>{
   }
 }
 
+export const  deleteServerService = async(req,res)=>{
+  try {
+    const response = await discordServerService.deleteServerService(
+      req.params.serveId,
+      req.user
+    );
+
+    return res.status(StatusCodes.OK).json(customSuccessResponse('server deleted successfully', response))
+  } catch (error) {
+    console.log('delete controller error', error);
+    // check status code for this implementation
+    return res.status(StatusCodes.BAD_REQUEST).json(customErrorResponse("something is wrong while deleting", error))
+  }
+}
+
+export const  updateServerService = async(req,res)=>{
+  try {
+    const response = await discordServerService.updateServerService(
+      req.serveId,
+      req.body,
+      req.user
+    );
+    return res.status(StatusCodes.OK).json(customSuccessResponse('server updated successfully', response))
+  } catch (error) {
+    console.log("update controller error", error);
+    customErrorResponse("something is wrong with update service", error)
+  }
+}
+
+export const  getServerService= async(req,res)=>{
+    try {
+      const response = await discordServerService.getServerService(req.params.serveId, req.user);
+      return res.status(StatusCodes.OK).json(customSuccessResponse('server fetched successfully', response))
+    } catch (error) {
+      console.log("get server controller error", error)
+    }
+}

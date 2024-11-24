@@ -4,6 +4,7 @@ import discordServerRepository from "../repositories/discordServerRepository.js"
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
 import categoryRepository from "../repositories/categoryRepository.js";
+import errorMap from "zod/locales/en.js";
 
 // helper func
 const isUserAdminOfServer = (server, userId) => {
@@ -91,7 +92,7 @@ export const updateServerService = async(serverId,serverData,userId)=>{
     if(!server){
       throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
     }
-    const isValidAdmin = await isUserAdminOfServer(serverId, userId);
+    const isValidAdmin = await isUserAdminOfServer(server, userId);
     if(!isValidAdmin){
       throw new CustomError("User is not allowed to delete the workspace", StatusCodes.BAD_REQUEST, "Admin role required")
     }
@@ -103,7 +104,22 @@ export const updateServerService = async(serverId,serverData,userId)=>{
   }
 }
 
-export const getServerService = async(serverId,userId)=>{};
+export const getServerService = async(serverId,userId)=>{
+  try {
+    const server = await discordServerRepository.getById(serverId);
+    if(!server){
+      throw new CustomError('Server dose not exits', StatusCodes.NOT_FOUND, "not found")
+    }
+    const isMember = isUserPartOfServer(server,userId)
+    if(!isMember){
+      throw new CustomError('User is not a part of server', StatusCodes.FORBIDDEN, "Not allowed")
+    }
+    return server
+  } catch (error) {
+    console.log("get server service", error);
+    throw error
+  }
+};
 
 export const addMemberToServerService = async(serverId,userId)=>{};
 

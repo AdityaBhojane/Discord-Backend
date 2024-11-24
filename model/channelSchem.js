@@ -7,10 +7,6 @@ const channelSchema = new mongoose.Schema({
         unique:[true, "Channel name already exits"],
         trim:true
     },
-    serverId:{
-        type:mongoose.Schema.Types.ObjectId,
-        ref:'Server',
-    },
     categoryId:{
         type:mongoose.Schema.type.ObjectId,
         ref:"Category",

@@ -35,13 +35,12 @@ const serverSchema = new mongoose.Schema(
     ],
     joinCode: {
       type: String,
-      required: [true, 'Join code is required'],
-      unique: true,
+      required:[true, "join code is required"]
     },
     inviteLinks: [
       {
         type: String,
-        require:[true,'invite link required']
+        required:[true,'invite link required']
       },
     ],
     categories: [

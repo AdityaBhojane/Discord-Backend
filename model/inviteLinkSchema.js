@@ -3,7 +3,6 @@ import mongoose from "mongoose";
 const inviteLinkSchema = new mongoose.Schema({
     link:{
         type:String,
-        require:[true, "invite link is required"]
     },
     serverId:{
         type:mongoose.Schema.Types.ObjectId,
