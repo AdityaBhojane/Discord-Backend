@@ -33,7 +33,7 @@ const discordServerRepository = {
     return server;
   },
   addCategoryToServer: async (serverId,categoryName) => {
-    const server = await Server.findById(serverId).populate("categories");
+    const server = await Server.findById(serverId);
     
     if (!server) {
       throw new CustomError("Server not found", getStatusCode.NOT_FOUND);
@@ -64,10 +64,59 @@ const discordServerRepository = {
     const response = await Server.find({'members.memberId': userId});
     return response;
   },
-  deleteCategory: () => {},
-  getUsers: () => {},
-  deleteUsers: () => {},
-  getAllUsers: () => {},
+  addChannelToServer: async(serverId, channelName) => {
+    const server = await discordServerRepository.getById(serverId).populate("categories");
+      if(!server){
+        throw new CustomError("sever is not found to add category",StatusCodes.NOT_FOUND)
+      };
+      const isChannelAlreadyPartOfServer = await server.categories.channels.find(
+        (channel) => channel.name == channelName
+      );
+      if(isChannelAlreadyPartOfServer){
+        throw new CustomError("this channel already part of server", StatusCodes.FORBIDDEN)
+      };
+
+      const channel = await channelRepository.create({
+        name:channelName,
+        serverId:serverId
+      })
+
+      server.categories.channels.push(channel)
+      await server.save();
+      return server
+  },
+  getServerDetailsById:async(serverId)=>{
+    return await Server.findById(serverId)
+    .populate("members.memberId")
+    .populate('categories')
+  },
+  addMemberToServer: () => {},
+  getSeverByJoinCode: () => {},
 };
 
 export default discordServerRepository;
+
+
+/**
+ * addCategoryToServer:async(serverId, categoryName)=>{
+      const server = await discordServerRepository.getById(serverId);
+      if(!server){
+        throw new CustomError("sever is not found to add category",StatusCodes.NOT_FOUND)
+      };
+      const isCategoryAlreadyPartOfServer = await server.categories.find(
+        (category) => category.name == categoryName
+      );
+      if(isCategoryAlreadyPartOfServer){
+        throw new CustomError("this category already part of server", StatusCodes.FORBIDDEN)
+      };
+
+      const category = await categoryRepository.create({
+        name:categoryName,
+        serverId:serverId
+      })
+
+      server.categories.push(category)
+      await server.save();
+      return server
+  },
+ */

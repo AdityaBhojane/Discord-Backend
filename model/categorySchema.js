@@ -9,6 +9,10 @@ const categorySchema = new mongoose.Schema({
     serverId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:'Server',
+    },
+    channels:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Channel"
     }
 },
 {timestamps:true});

@@ -1,7 +1,8 @@
 import { StatusCodes } from "http-status-codes";
-import { CreateServerService, deleteServerService, getAllServersUserPartOfService, getServerService, updateServerService } from "../services/discordServerService.js";
+import { addNewCategoryToServerService, CreateServerService, deleteServerService, getAllServersUserPartOfService, getServerService, updateServerService } from "../services/discordServerService.js";
 import customSuccessResponse from "../utils/common/successResponse.js";
 import customErrorResponse from "../utils/common/errorResponse.js";
+
 
 
 export const createDiscordServerController = async (req, res) => {
@@ -71,4 +72,22 @@ export const  getServerController= async(req,res)=>{
       console.log("get server controller error", error);
       return res.status(StatusCodes.BAD_REQUEST).json(customErrorResponse("something is wrong while getting details", error))
     }
+}
+
+export const addNewCategoryToServerController = async(req,res)=>{
+  try {
+    const response = await addNewCategoryToServerService(req.params.serverId,req.body.category,req.user);
+    return res.status(StatusCodes.OK).json(customSuccessResponse("category created successfully", response))
+  } catch (error) {
+      console.log("add category controller error", error);
+      return res.status(StatusCodes.FORBIDDEN).json(customErrorResponse('something is wrong with add channel controller', error))  
+  }
+}
+
+
+export const addNewChannelToServerController = async(req,res)=>{
+
+}
+
+export const addMemberToServerController = async(req,res)=>{
 }

@@ -1,6 +1,7 @@
 import express from "express";
 
 import {
+  addNewCategoryToServerController,
   createDiscordServerController,
   deleteServerController,
   getAllServersUserPartOfController,
@@ -8,7 +9,7 @@ import {
   updateServerController,
 } from "../../controllers/discordServerController.js";
 import isAuthenticate from "../../middlewares/authMiddleware.js";
-import { createServerSchema } from "../../validators/zodSchema/serverSchema.js";
+import { addCategoryToServerSchema, createServerSchema } from "../../validators/zodSchema/serverSchema.js";
 import { validate } from "../../validators/zodValidator.js";
 
 const router = express.Router();
@@ -23,5 +24,6 @@ router.get("/", isAuthenticate, getAllServersUserPartOfController);
 router.delete("/:serverId", isAuthenticate, deleteServerController);
 router.put("/:serverId", isAuthenticate, updateServerController);
 router.get("/:serverId",isAuthenticate, getServerController);
+router.put("/:serverId/channels",isAuthenticate,validate(addCategoryToServerSchema),addNewCategoryToServerController)
 
 export default router;
