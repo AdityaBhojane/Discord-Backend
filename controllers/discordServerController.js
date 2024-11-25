@@ -85,7 +85,7 @@ export const addNewCategoryToServerController = async(req,res)=>{
 }
 
 
-export const addNewChannelToServerController = async(req,res)=>{
+export const addNewChannelToCategoryController = async(req,res)=>{
 
 }
 

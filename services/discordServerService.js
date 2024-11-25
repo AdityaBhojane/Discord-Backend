@@ -4,7 +4,7 @@ import discordServerRepository from "../repositories/discordServerRepository.js"
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
 import categoryRepository from "../repositories/categoryRepository.js";
-import errorMap from "zod/locales/en.js";
+
 
 // helper func
 const isUserAdminOfServer = (server, userId) => {
@@ -33,35 +33,50 @@ export const CreateServerService = async (serverData) => {
     const joinCode = uuidv4().substring(0, 6).toUpperCase();
 
     const response = await discordServerRepository.create({
-      name: serverData.name,
-      description: serverData.description,
-      joinCode,
+        name: serverData.name,
+        description: serverData.description,
+        joinCode,
     });
 
     await discordServerRepository.addUserToServer(
-      response._id,
-      serverData.owner,
-      "admin"
+        response._id,
+        serverData.owner,
+        "admin"
     );
 
-    const updatedServer = await discordServerRepository.addCategoryToServer(
-      response._id,
-      "general"
+    const category = await discordServerRepository.addCategoryToServer(
+        response._id,
+        "general"
     );
+
+    if (!category || !category.id) {
+        throw new CustomError(
+            "Category creation failed",
+            StatusCodes.INTERNAL_SERVER_ERROR,
+            "Cannot retrieve category ID"
+        );
+    }
+
+    const addChannel = await categoryRepository.addChannelToCategory(
+        category.id,
+        "general"
+    );
+
+    if (!addChannel) {
+        throw new CustomError(
+            "Cannot create a channel",
+            StatusCodes.BAD_REQUEST,
+            "Check create server service"
+        );
+    }
+
+    // Re-fetch the server with all changes
+    const updatedServer = await discordServerRepository.getServerDetailsById(response._id);
     return updatedServer;
-  } catch (error) {
-    if (error.name == "ValidationError") {
-      throw new CustomError("Validation Error", StatusCodes.BAD_REQUEST, error);
-    }
-    if (error.name === "MongoServerError" && error.code === 11000) {
-      throw new CustomError(
-        "server with a same name already exits",
-        StatusCodes.BAD_REQUEST,
-        error
-      );
-    }
+} catch (error) {
     throw error;
-  }
+}
+
 };
 
 export const getAllServersUserPartOfService = async (userId) => {
@@ -69,7 +84,6 @@ export const getAllServersUserPartOfService = async (userId) => {
     const response = await discordServerRepository.getAllServersUserPartOf(
       userId
     );
-    console.log(response);
     return response;
   } catch (error) {
     console.log("get service error", error);

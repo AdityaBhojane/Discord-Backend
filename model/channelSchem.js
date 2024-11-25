@@ -4,16 +4,15 @@ const channelSchema = new mongoose.Schema({
     name:{
         type:String,
         require:[true, "Channel name is required"],
-        unique:[true, "Channel name already exits"],
-        trim:true
+        trim:true,
     },
     categoryId:{
-        type:mongoose.Schema.type.ObjectId,
+        type:mongoose.Schema.Types.ObjectId,
         ref:"Category",
     }
 },
 {timestamps:true});
 
-const Channel = mongoose.model("ChannelSchema", channelSchema);
+const Channel = mongoose.model("Channel", channelSchema);
 
 export default Channel

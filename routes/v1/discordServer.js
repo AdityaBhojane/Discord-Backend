@@ -24,6 +24,6 @@ router.get("/", isAuthenticate, getAllServersUserPartOfController);
 router.delete("/:serverId", isAuthenticate, deleteServerController);
 router.put("/:serverId", isAuthenticate, updateServerController);
 router.get("/:serverId",isAuthenticate, getServerController);
-router.put("/:serverId/channels",isAuthenticate,validate(addCategoryToServerSchema),addNewCategoryToServerController)
+router.put("/:serverId/categories",isAuthenticate,validate(addCategoryToServerSchema),addNewCategoryToServerController)
 
 export default router;

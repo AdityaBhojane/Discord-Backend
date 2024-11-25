@@ -16,7 +16,7 @@ export const signInService = async (data) => {
     try {
         const user = await userRepository.getByEmail(data.email);
         if(!user){
-            throw new CustomError("username and password is required", StatusCodes.BAD_REQUEST)
+            throw new CustomError("enter a valid email or password", StatusCodes.BAD_REQUEST)
         }
         const isMatch = bcrypt.compareSync(data.password, user.password);
         if(!isMatch){

@@ -58,7 +58,7 @@ const discordServerRepository = {
     server.categories.push(category);
     await server.save();
 
-    return server;
+    return category;
   },
   getAllServersUserPartOf: async(userId)=>{
     const response = await Server.find({'members.memberId': userId});
