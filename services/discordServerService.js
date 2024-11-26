@@ -4,7 +4,8 @@ import discordServerRepository from "../repositories/discordServerRepository.js"
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
 import categoryRepository from "../repositories/categoryRepository.js";
-
+import mongoose from "mongoose";
+import channelRepository from "../repositories/channelRepository.js";
 
 // helper func
 const isUserAdminOfServer = (server, userId) => {
@@ -29,54 +30,70 @@ const isCategoryIsPartOfServer = (server, categoryName) => {
 };
 
 export const CreateServerService = async (serverData) => {
+  let session;
   try {
+    session = await mongoose.startSession();
+    session.startTransaction();
+
     const joinCode = uuidv4().substring(0, 6).toUpperCase();
 
-    const response = await discordServerRepository.create({
+    const response = await discordServerRepository.create(
+      {
         name: serverData.name,
         description: serverData.description,
         joinCode,
-    });
+      },
+      { session }
+    );
 
     await discordServerRepository.addUserToServer(
-        response._id,
-        serverData.owner,
-        "admin"
+      response._id,
+      serverData.owner,
+      "admin",
+      { session }
     );
 
     const category = await discordServerRepository.addCategoryToServer(
-        response._id,
-        "general"
+      response._id,
+      "general",
+      { session }
     );
 
     if (!category || !category.id) {
-        throw new CustomError(
-            "Category creation failed",
-            StatusCodes.INTERNAL_SERVER_ERROR,
-            "Cannot retrieve category ID"
-        );
+      throw new CustomError(
+        "Category creation failed",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        "Cannot retrieve category ID"
+      );
     }
 
     const addChannel = await categoryRepository.addChannelToCategory(
-        category.id,
-        "general"
+      category.id,
+      "general",
+      { session }
     );
 
     if (!addChannel) {
-        throw new CustomError(
-            "Cannot create a channel",
-            StatusCodes.BAD_REQUEST,
-            "Check create server service"
-        );
+      throw new CustomError(
+        "Cannot create a channel",
+        StatusCodes.BAD_REQUEST,
+        "Check create server service"
+      );
     }
 
-    // Re-fetch the server with all changes
-    const updatedServer = await discordServerRepository.getServerDetailsById(response._id);
-    return updatedServer;
-} catch (error) {
-    throw error;
-}
+    await session.commitTransaction();
+    session.endSession();
 
+    // Re-fetch the server with all changes
+    const updatedServer = await discordServerRepository.getServerDetailsById(
+      response._id
+    );
+    return updatedServer;
+  } catch (error) {
+    await session.abortTransaction();
+    session.endSession();
+    throw error;
+  }
 };
 
 export const getAllServersUserPartOfService = async (userId) => {
@@ -84,6 +101,13 @@ export const getAllServersUserPartOfService = async (userId) => {
     const response = await discordServerRepository.getAllServersUserPartOf(
       userId
     );
+    if (response.length == 0) {
+      throw new CustomError(
+        "User is not part of any server",
+        StatusCodes.NOT_FOUND,
+        "server not found"
+      );
+    }
     return response;
   } catch (error) {
     console.log("get service error", error);
@@ -92,15 +116,22 @@ export const getAllServersUserPartOfService = async (userId) => {
 };
 
 export const deleteServerService = async (serverId, userId) => {
+  let session;
   try {
-    const server = await discordServerRepository.getById(serverId);
+    session = await mongoose.startSession();
+    session.startTransaction();
+  
+    // Fetch the server and validate
+    const server = await discordServerRepository.getServerDetailsById(serverId);
     if (!server) {
       throw new CustomError(
-        "Server dose not exits",
+        "Server does not exist",
         StatusCodes.NOT_FOUND,
         "not found"
       );
     }
+  
+    // Check admin permissions
     const isValidAdmin = await isUserAdminOfServer(server, userId);
     if (!isValidAdmin) {
       throw new CustomError(
@@ -109,14 +140,60 @@ export const deleteServerService = async (serverId, userId) => {
         "Admin role required"
       );
     }
-    await categoryRepository.deleteMany(server.categories);
-    console.log(serverId);
-    const response = await discordServerRepository.delete(serverId);
+  
+    // Collect all channel IDs
+    const channelIds = server.categories.flatMap(category =>
+      category.channels.map(channel => channel._id)
+    );
+  
+    console.log(channelIds)
+    // Delete channels
+    const deleteChannelResponse = await channelRepository.deleteMany(
+      channelIds,
+      { session }
+    );
+  
+    // Validate channel deletion
+    if (deleteChannelResponse.deletedCount !== channelIds.length) {
+      throw new CustomError(
+        "Not all channels deleted properly",
+        StatusCodes.FORBIDDEN,
+        "Transaction failed"
+      );
+    }
+  
+    // Delete categories
+    const deleteCategoriesResponse = await categoryRepository.deleteMany(
+      server.categories,
+      { session }
+    );
+  
+    // Validate category deletion
+    if (deleteCategoriesResponse.deletedCount !== server.categories.length) {
+      throw new CustomError(
+        "Not all categories deleted properly",
+        StatusCodes.FORBIDDEN,
+        "Transaction failed"
+      );
+    }
+  
+    // Delete server
+    const response = await discordServerRepository.delete(serverId, { session });
+  
+    // Commit the transaction
+    await session.commitTransaction();
+    session.endSession();
     return response;
   } catch (error) {
-    console.log("delete service", error);
+    // Rollback transaction
+    if (session) {
+      await session.abortTransaction();
+      session.endSession();
+    }
+    console.log("delete service error:", error);
     throw error;
   }
+  
 };
 
 export const updateServerService = async (serverId, serverData, userId) => {

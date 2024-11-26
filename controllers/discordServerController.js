@@ -31,7 +31,7 @@ export const getAllServersUserPartOfController = async(req,res)=>{
     return res.status(StatusCodes.OK).json(customSuccessResponse("Severs fetched successfully", response))
   } catch (error) {
     console.log("server controller", error)
-    customErrorResponse("something is wrong while fetching", error)
+    res.status(StatusCodes.NOT_FOUND).json(customErrorResponse("something is wrong while fetching", error))
   }
 }
 
