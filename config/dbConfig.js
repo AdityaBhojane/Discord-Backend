@@ -8,5 +8,6 @@ export default async function connectDB (){
     } catch (error) {
         console.log(error)
     }
-
 }
+
+// omega cluster

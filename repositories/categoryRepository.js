@@ -11,8 +11,9 @@ const categoryRepository = {
         const response = await Category.findById(categoryId);
         return response
     },
-    addChannelToCategory:async(categoryId,channelName)=>{
-        const category = await Category.findById(categoryId);
+    addChannelToCategory:async(categoryId,channelName,options = {})=>{
+        const {session} = options;
+        const category = await Category.findById(categoryId).session(session);
 
         if (!category) {
           throw new CustomError("category not found",StatusCodes.NOT_FOUND);
@@ -32,9 +33,9 @@ const categoryRepository = {
         const channel = await channelRepository.create({
           name: channelName,
           categoryId:categoryId,
-        });
+        },{session});
     
-        category.channels.push(channel);
+        category.channels.push(channel[0]);
         await category.save();
     
         return category;

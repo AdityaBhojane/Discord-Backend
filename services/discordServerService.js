@@ -46,29 +46,41 @@ export const CreateServerService = async (serverData) => {
       { session }
     );
 
-    await discordServerRepository.addUserToServer(
-      response._id,
+    if(!response){
+      throw new CustomError("server not created", StatusCodes.FORBIDDEN, response)
+    }
+
+    const addUserResponse = await discordServerRepository.addUserToServer(
+      response[0]._id,
       serverData.owner,
       "admin",
       { session }
     );
 
+    if (!addUserResponse) {
+      throw new CustomError(
+        "Can not add user to server",
+        StatusCodes.FORBIDDEN,
+        addUserResponse
+      );
+    }
+
     const category = await discordServerRepository.addCategoryToServer(
-      response._id,
+      response[0]._id,
       "general",
       { session }
     );
 
-    if (!category || !category.id) {
+    if (!category || !category[0].id) {
       throw new CustomError(
         "Category creation failed",
         StatusCodes.INTERNAL_SERVER_ERROR,
-        "Cannot retrieve category ID"
+        category
       );
     }
 
     const addChannel = await categoryRepository.addChannelToCategory(
-      category.id,
+      category[0].id,
       "general",
       { session }
     );
@@ -77,21 +89,27 @@ export const CreateServerService = async (serverData) => {
       throw new CustomError(
         "Cannot create a channel",
         StatusCodes.BAD_REQUEST,
-        "Check create server service"
+        addChannel
       );
     }
+
 
     await session.commitTransaction();
     session.endSession();
 
     // Re-fetch the server with all changes
     const updatedServer = await discordServerRepository.getServerDetailsById(
-      response._id
+      response[0]._id
     );
+
     return updatedServer;
   } catch (error) {
-    await session.abortTransaction();
-    session.endSession();
+    if (session && session.inTransaction()) {
+      await session.abortTransaction();
+    }
+    if (session) {
+      session.endSession();
+    }
     throw error;
   }
 };
@@ -120,8 +138,7 @@ export const deleteServerService = async (serverId, userId) => {
   try {
     session = await mongoose.startSession();
     session.startTransaction();
-  
-    // Fetch the server and validate
+
     const server = await discordServerRepository.getServerDetailsById(serverId);
     if (!server) {
       throw new CustomError(
@@ -130,8 +147,9 @@ export const deleteServerService = async (serverId, userId) => {
         "not found"
       );
     }
-  
-    // Check admin permissions
+    
+    console.log(server,userId)
+
     const isValidAdmin = await isUserAdminOfServer(server, userId);
     if (!isValidAdmin) {
       throw new CustomError(
@@ -140,19 +158,17 @@ export const deleteServerService = async (serverId, userId) => {
         "Admin role required"
       );
     }
-  
+
     // Collect all channel IDs
-    const channelIds = server.categories.flatMap(category =>
-      category.channels.map(channel => channel._id)
+    const channelIds = server.categories.flatMap((category) =>
+      category.channels.map((channel) => channel._id)
     );
-  
-    console.log(channelIds)
-    // Delete channels
+
     const deleteChannelResponse = await channelRepository.deleteMany(
       channelIds,
       { session }
     );
-  
+
     // Validate channel deletion
     if (deleteChannelResponse.deletedCount !== channelIds.length) {
       throw new CustomError(
@@ -161,13 +177,13 @@ export const deleteServerService = async (serverId, userId) => {
         "Transaction failed"
       );
     }
-  
+
     // Delete categories
     const deleteCategoriesResponse = await categoryRepository.deleteMany(
       server.categories,
       { session }
     );
-  
+
     // Validate category deletion
     if (deleteCategoriesResponse.deletedCount !== server.categories.length) {
       throw new CustomError(
@@ -176,24 +192,26 @@ export const deleteServerService = async (serverId, userId) => {
         "Transaction failed"
       );
     }
-  
+
     // Delete server
-    const response = await discordServerRepository.delete(serverId, { session });
-  
+    const response = await discordServerRepository.delete(serverId, {
+      session,
+    });
+
     // Commit the transaction
     await session.commitTransaction();
     session.endSession();
     return response;
   } catch (error) {
-    // Rollback transaction
-    if (session) {
+    if (session && session.inTransaction()) {
       await session.abortTransaction();
+    }
+    if (session) {
       session.endSession();
     }
     console.log("delete service error:", error);
     throw error;
   }
-  
 };
 
 export const updateServerService = async (serverId, serverData, userId) => {
