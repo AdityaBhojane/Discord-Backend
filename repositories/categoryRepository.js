@@ -11,7 +11,7 @@ const categoryRepository = {
         const response = await Category.findById(categoryId);
         return response
     },
-    addChannelToCategory:async(categoryId,channelName,options = {})=>{
+    addChannelToCategory:async(serverId,categoryId,channelName,options = {})=>{
         const {session} = options;
         const category = await Category.findById(categoryId).session(session);
 
@@ -32,6 +32,7 @@ const categoryRepository = {
     
         const channel = await channelRepository.create({
           name: channelName,
+          serverId:serverId,
           categoryId:categoryId,
         },{session});
     
@@ -39,6 +40,10 @@ const categoryRepository = {
         await category.save();
     
         return category;
+    },
+    getCategoryDetailsById:async(categoryId)=>{
+      const response = await Category.findById(categoryId).populate("channels");
+      return response;
     }
 };
 

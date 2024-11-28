@@ -70,35 +70,6 @@ const discordServerRepository = {
     const response = await Server.find({ "members.memberId": userId });
     return response;
   },
-  addChannelToServer: async (serverId, channelName) => {
-    const server = await discordServerRepository
-      .getById(serverId)
-      .populate("categories");
-    if (!server) {
-      throw new CustomError(
-        "sever is not found to add category",
-        StatusCodes.NOT_FOUND
-      );
-    }
-    const isChannelAlreadyPartOfServer = await server.categories.channels.find(
-      (channel) => channel.name == channelName
-    );
-    if (isChannelAlreadyPartOfServer) {
-      throw new CustomError(
-        "this channel already part of server",
-        StatusCodes.FORBIDDEN
-      );
-    }
-
-    const channel = await channelRepository.create({
-      name: channelName,
-      serverId: serverId,
-    });
-
-    server.categories.channels.push(channel);
-    await server.save();
-    return server;
-  },
   getServerDetailsById: async (serverId) => {
     return await Server.findById(serverId)
       .populate("members.memberId")
@@ -131,5 +102,39 @@ export default discordServerRepository;
       server.categories.push(category)
       await server.save();
       return server
+  },
+
+
+
+
+   addChannelToServer: async (serverId,categoryId, channelName) => {
+    const server = await discordServerRepository
+      .getById(serverId)
+      .populate("categories");
+    if (!server) {
+      throw new CustomError(
+        "sever is not found to add category",
+        StatusCodes.NOT_FOUND,
+        server
+      );
+    }
+    const isChannelAlreadyPartOfServer = await server.categories.channels.find(
+      (channel) => channel.name == channelName
+    );
+    if (isChannelAlreadyPartOfServer) {
+      throw new CustomError(
+        "this channel already part of server",
+        StatusCodes.FORBIDDEN
+      );
+    }
+    const channel = await channelRepository.create({
+      name: channelName,
+      serverId: serverId,
+      categoryId:categoryId,
+    });
+
+    server.categories.channels.push(channel);
+    await server.save();
+    return server;
   },
  */

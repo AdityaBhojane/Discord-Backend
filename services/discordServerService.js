@@ -7,6 +7,7 @@ import categoryRepository from "../repositories/categoryRepository.js";
 import mongoose from "mongoose";
 import channelRepository from "../repositories/channelRepository.js";
 
+
 // helper func
 const isUserAdminOfServer = (server, userId) => {
   return server.members.find(
@@ -29,6 +30,13 @@ const isCategoryIsPartOfServer = (server, categoryName) => {
   );
 };
 
+const isChannelIsPartOfCategory = async (category, channelName) => {
+  const response = await category.channels.find(
+    (channels) => channels.name.toLowerCase() === channelName.toLowerCase()
+  );
+  return response;
+};
+
 export const CreateServerService = async (serverData) => {
   let session;
   try {
@@ -46,8 +54,14 @@ export const CreateServerService = async (serverData) => {
       { session }
     );
 
-    if(!response){
-      throw new CustomError("server not created", StatusCodes.FORBIDDEN, response)
+    console.log(response);
+
+    if (!response) {
+      throw new CustomError(
+        "server not created",
+        StatusCodes.FORBIDDEN,
+        response
+      );
     }
 
     const addUserResponse = await discordServerRepository.addUserToServer(
@@ -80,6 +94,7 @@ export const CreateServerService = async (serverData) => {
     }
 
     const addChannel = await categoryRepository.addChannelToCategory(
+      response[0]._id,
       category[0].id,
       "general",
       { session }
@@ -92,7 +107,6 @@ export const CreateServerService = async (serverData) => {
         addChannel
       );
     }
-
 
     await session.commitTransaction();
     session.endSession();
@@ -147,8 +161,8 @@ export const deleteServerService = async (serverId, userId) => {
         "not found"
       );
     }
-    
-    console.log(server,userId)
+
+    console.log(server, userId);
 
     const isValidAdmin = await isUserAdminOfServer(server, userId);
     if (!isValidAdmin) {
@@ -297,7 +311,60 @@ export const addNewCategoryToServerService = async (
   }
 };
 
-export const addNewChannelToServerService = async (serverId, userId) => {};
+export const addNewChannelToServerService = async (
+  serverId,
+  categoryId,
+  channelName,
+  userId
+) => {
+  try {
+    const server = await discordServerRepository.getServerDetailsById(serverId);
+
+    if (!server) {
+      throw new CustomError("server dost not exits", StatusCodes.NOT_FOUND);
+    }
+
+
+    const isValidAdmin = isUserAdminOfServer(server, userId);
+    if (!isValidAdmin) {
+      throw new CustomError(
+        "User not allowed to add category to the server",
+        StatusCodes.FORBIDDEN
+      );
+    }
+
+
+    const category = await categoryRepository.getCategoryDetailsById(categoryId);
+
+    const categoryPartOfServer = server.categories.some(channel=>channel._id.toString() == category._id.toString())
+
+    if (!category || !categoryPartOfServer) {
+      throw new CustomError("Category not found or does not belong to the server", StatusCodes.NOT_FOUND);
+    }
+    const isChannelIsPartOfCategoryResponse = await isChannelIsPartOfCategory(
+      category,
+      channelName
+    );
+
+    if (isChannelIsPartOfCategoryResponse) {
+      throw new CustomError(
+        "Channel already exits",
+        StatusCodes.UNAUTHORIZED,
+        "cannot add"
+      );
+    }
+
+    const response = await categoryRepository.addChannelToCategory(
+      serverId,
+      categoryId,
+      channelName
+    );
+    return response;
+  } catch (error) {
+    console.log("add channel service error", error);
+    throw error;
+  }
+};
 
 export const addMemberToServerService = async (serverId, userId) => {};
 

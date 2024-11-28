@@ -2,6 +2,7 @@ import express from "express";
 
 import {
   addNewCategoryToServerController,
+  addNewChannelToCategoryController,
   createDiscordServerController,
   deleteServerController,
   getAllServersUserPartOfController,
@@ -9,7 +10,11 @@ import {
   updateServerController,
 } from "../../controllers/discordServerController.js";
 import isAuthenticate from "../../middlewares/authMiddleware.js";
-import { addCategoryToServerSchema, createServerSchema } from "../../validators/zodSchema/serverSchema.js";
+import {
+  addCategoryToServerSchema,
+  addChannelToServerSchema,
+  createServerSchema,
+} from "../../validators/zodSchema/serverSchema.js";
 import { validate } from "../../validators/zodValidator.js";
 
 const router = express.Router();
@@ -23,7 +28,18 @@ router.post(
 router.get("/", isAuthenticate, getAllServersUserPartOfController);
 router.delete("/:serverId", isAuthenticate, deleteServerController);
 router.put("/:serverId", isAuthenticate, updateServerController);
-router.get("/:serverId",isAuthenticate, getServerController);
-router.put("/:serverId/categories",isAuthenticate,validate(addCategoryToServerSchema),addNewCategoryToServerController)
+router.get("/:serverId", isAuthenticate, getServerController);
+router.put(
+  "/:serverId/categories",
+  isAuthenticate,
+  validate(addCategoryToServerSchema),
+  addNewCategoryToServerController
+);
+router.put(
+  "/:serverId/categories/:categoryId/channels",
+  isAuthenticate,
+  validate(addChannelToServerSchema),
+  addNewChannelToCategoryController
+);
 
 export default router;

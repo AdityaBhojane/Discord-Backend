@@ -8,8 +8,8 @@ export const addMemberToServerSchema = z.object({
   memberId: z.string()
 });
 export const addCategoryToServerSchema = z.object({
-  category: z.string()
+  categoryName: z.string()
 });
 export const addChannelToServerSchema = z.object({
-  channels: z.string()
+  channelName: z.string()
 });

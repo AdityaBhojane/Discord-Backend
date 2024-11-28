@@ -9,7 +9,7 @@ export const validate = (schema) => {
       next();
     } catch (error) {
       res.status(StatusCodes.BAD_REQUEST).json(
-        customErrorResponse('Validation error')
+        customErrorResponse('Validation error',error)
       );
     }
   };
