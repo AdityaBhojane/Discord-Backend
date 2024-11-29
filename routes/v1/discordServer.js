@@ -1,6 +1,7 @@
 import express from "express";
 
 import {
+  addMemberToServerController,
   addNewCategoryToServerController,
   addNewChannelToCategoryController,
   createDiscordServerController,
@@ -13,6 +14,7 @@ import isAuthenticate from "../../middlewares/authMiddleware.js";
 import {
   addCategoryToServerSchema,
   addChannelToServerSchema,
+  addMemberToServerSchema,
   createServerSchema,
 } from "../../validators/zodSchema/serverSchema.js";
 import { validate } from "../../validators/zodValidator.js";
@@ -42,4 +44,10 @@ router.put(
   addNewChannelToCategoryController
 );
 
+router.put(
+  "/:serverId/users",
+  isAuthenticate,
+  validate(addMemberToServerSchema),
+  addMemberToServerController
+);
 export default router;

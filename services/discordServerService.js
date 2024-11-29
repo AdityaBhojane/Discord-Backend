@@ -1,12 +1,14 @@
 import { v4 as uuidv4 } from "uuid";
 import discordServerRepository from "../repositories/discordServerRepository.js";
-
 import CustomError from "../utils/CustomError.js";
 import { StatusCodes } from "http-status-codes";
 import categoryRepository from "../repositories/categoryRepository.js";
 import mongoose from "mongoose";
 import channelRepository from "../repositories/channelRepository.js";
-
+import { addEmailToMailQueue } from "../queues/mailQueues.js";
+import { mailObject } from "../helpers/mailObject.js";
+import { isValid } from "zod";
+import userRepository from "../repositories/userRepository.js";
 
 // helper func
 const isUserAdminOfServer = (server, userId) => {
@@ -324,7 +326,6 @@ export const addNewChannelToServerService = async (
       throw new CustomError("server dost not exits", StatusCodes.NOT_FOUND);
     }
 
-
     const isValidAdmin = isUserAdminOfServer(server, userId);
     if (!isValidAdmin) {
       throw new CustomError(
@@ -333,13 +334,19 @@ export const addNewChannelToServerService = async (
       );
     }
 
+    const category = await categoryRepository.getCategoryDetailsById(
+      categoryId
+    );
 
-    const category = await categoryRepository.getCategoryDetailsById(categoryId);
-
-    const categoryPartOfServer = server.categories.some(channel=>channel._id.toString() == category._id.toString())
+    const categoryPartOfServer = server.categories.some(
+      (channel) => channel._id.toString() == category._id.toString()
+    );
 
     if (!category || !categoryPartOfServer) {
-      throw new CustomError("Category not found or does not belong to the server", StatusCodes.NOT_FOUND);
+      throw new CustomError(
+        "Category not found or does not belong to the server",
+        StatusCodes.NOT_FOUND
+      );
     }
     const isChannelIsPartOfCategoryResponse = await isChannelIsPartOfCategory(
       category,
@@ -366,6 +373,68 @@ export const addNewChannelToServerService = async (
   }
 };
 
-export const addMemberToServerService = async (serverId, userId) => {};
+export const addMemberToServerService = async (
+  serverId,
+  memberId,
+  role,
+  userId
+) => {
+  try {
+    const server = await discordServerRepository.getById(serverId);
+    if (!server) {
+      throw new CustomError(
+        "server dost not exist",
+        StatusCodes.NOT_FOUND,
+        "Not Found"
+      );
+    }
+
+    const isAdmin = await isUserAdminOfServer(server, userId);
+    if (!isAdmin) {
+      throw new CustomError(
+        "User not admin of a server",
+        StatusCodes.UNAUTHORIZED,
+        "not allowed"
+      );
+    }
+
+    const isValidUser = await userRepository.getById(memberId);
+    if(!isValidUser){
+      throw new CustomError(
+        "User not found",
+        StatusCodes.NOT_FOUND
+      );
+    }
+    console.log(isValidUser)
+    const isUserPartOfServerResponse = await isUserPartOfServer(
+      server,
+      memberId
+    );
+    if (isUserPartOfServerResponse) {
+      throw new CustomError(
+        "User is already part of server",
+        StatusCodes.UNAUTHORIZED
+      );
+    }
+
+    const response = await discordServerRepository.addUserToServer(
+      serverId,
+      memberId,
+      role
+    );
+
+    addEmailToMailQueue({
+      ...mailObject,
+      to: isValidUser.email,
+      subject: "You have been added to a Server",
+      text:`Congratulation ! you have successfully added in a server ${server.name}`
+    });
+
+    return response;
+  } catch (error) {
+    console.log("add channel service error", error);
+    throw error;
+  }
+};
 
 export const getServerByJoinCodeService = async () => {};
