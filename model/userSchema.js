@@ -26,6 +26,17 @@ const userSchema = new mongoose.Schema({
             "schema : enter valid email"
         ]
     },
+    friends:[{
+        friendId: {
+            type:mongoose.Schema.ObjectId,
+            ref:"User"
+        },
+        status:{
+            type:String,
+            enum:['pending', 'accepted', 'declined'],
+            default: 'pending'
+        }
+    }],
     avatar:{
         type:String
     }

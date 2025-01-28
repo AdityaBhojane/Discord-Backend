@@ -1,12 +1,15 @@
 import mongoose from "mongoose";
 
 const messageSchema = new mongoose.Schema({
-    content:{
+    body:{
         type:String,
         required:[true, "content is required"],
         trim:true
     },
-    sender:{
+    image:{
+        type:String,
+    },
+    senderId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"User",
         required:[true, "sender id is required"]
@@ -16,9 +19,10 @@ const messageSchema = new mongoose.Schema({
         ref:"Channel",
         required:[true, "Channel id is required"]
     },
-    pinned:{
-        type:Boolean,
-        default:false
+    serverId:{
+        type:mongoose.Schema.ObjectId,
+        ref:"Server",
+        required:[true, "Server id is required"]
     },
 },{timestamps:true});
 
