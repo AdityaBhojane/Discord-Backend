@@ -1,6 +1,7 @@
 import { StatusCodes } from 'http-status-codes';
 import channelRepository from '../repositories/channelRepository.js';
 import messageRepository from '../repositories/messageRepository.js';
+import { isUserPartOfServer } from './discordServerService.js';
 
 
 export const getMessagesService = async (messageParams, page, limit, user) => {
@@ -10,7 +11,7 @@ export const getMessagesService = async (messageParams, page, limit, user) => {
 
   const Server = channelDetails.serverId;
 
-  const isMember = isUserMemberOfWorkspace(Server, user);
+  const isMember = isUserPartOfServer(Server, user);
 
   if (!isMember) {
     throw new CustomError(

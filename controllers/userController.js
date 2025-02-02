@@ -14,8 +14,8 @@ export const signUp = async (req,res)=>{
             data:user
         })
     } catch (error) {
-        console.log("sign up =",error)
-        res.status(StatusCodes.BAD_REQUEST).json(CustomErrorResponse(error))
+        // console.log("sign up =",error)
+        res.status(StatusCodes.BAD_REQUEST).json(CustomErrorResponse(error.message))
     }
 };
 export const signIn = async (req,res)=>{
@@ -31,7 +31,7 @@ export const signIn = async (req,res)=>{
         })
     } catch (error) {
         console.log('sign in =',error)
-        res.status(StatusCodes.BAD_REQUEST).json(CustomErrorResponse(error))
+        res.status(StatusCodes.BAD_REQUEST).json(CustomErrorResponse(error.message))
     }
 };
 

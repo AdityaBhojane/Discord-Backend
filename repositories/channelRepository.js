@@ -6,7 +6,7 @@ import crudRepository from "./CrudRepo.js";
 const channelRepository = {
     ...crudRepository(Channel),
     getChannelWithServerDetails: async function (channelId) {
-        const channel = await Channel.findById(channelId).populate('ServerId');
+        const channel = await Channel.findById(channelId).populate('serverId');
         return channel;
     }
 };

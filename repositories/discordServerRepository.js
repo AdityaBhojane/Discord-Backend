@@ -67,13 +67,20 @@ const discordServerRepository = {
     return category;
   },
   getAllServersUserPartOf: async (userId) => {
-    const response = await Server.find({ "members.memberId": userId });
+    const response = await Server.find({ "members.memberId": userId }).populate("categories");
     return response;
   },
   getServerDetailsById: async (serverId) => {
     return await Server.findById(serverId)
-      .populate("members.memberId")
-      .populate("categories");
+    .populate("members.memberId") 
+    .populate({
+      path: "categories",
+      populate: {
+        path: "channels",
+        select: "name", 
+      },
+    });
+
   },
   addMemberToServer: () => {},
   getSeverByJoinCode: () => {},

@@ -20,7 +20,7 @@ const isUserAdminOfServer = (server, userId) => {
   );
 };
 
-const isUserPartOfServer = (server, userId) => {
+export const isUserPartOfServer = (server, userId) => {
   return server.members.find(
     (members) => members.memberId.toString() == userId
   );
@@ -95,13 +95,45 @@ export const CreateServerService = async (serverData) => {
       );
     }
 
+    // const categoryText = await discordServerRepository.addCategoryToServer(
+    //   response[0]._id,
+    //   "Text Channels",
+    //   { session }
+    // );
+    // const categoryVoice = await discordServerRepository.addCategoryToServer(
+    //   response[0]._id,
+    //   "Voice Channels",
+    //   { session }
+    // );
+
+    if (!category|| !category[0].id) {
+      throw new CustomError(
+        "Category creation failed",
+        StatusCodes.INTERNAL_SERVER_ERROR,
+        category
+      );
+    }
+
     const addChannel = await categoryRepository.addChannelToCategory(
       response[0]._id,
       category[0].id,
       "general",
       { session }
     );
+    // const addChannelVoice = await categoryRepository.addChannelToCategory(
+    //   response[0]._id,
+    //   categoryVoice[0].id,
+    //   "general",
+    //   { session }
+    // );
 
+    // if (!addChannelText || !addChannelVoice) {
+    //   throw new CustomError(
+    //     "Cannot create a channel",
+    //     StatusCodes.BAD_REQUEST,
+    //     addChannel
+    //   );
+    // }
     if (!addChannel) {
       throw new CustomError(
         "Cannot create a channel",
@@ -136,11 +168,12 @@ export const getAllServersUserPartOfService = async (userId) => {
       userId
     );
     if (response.length == 0) {
-      throw new CustomError(
-        "User is not part of any server",
-        StatusCodes.NOT_FOUND,
-        "server not found"
-      );
+      // throw new CustomError(
+      //   "User is not part of any server",
+      //   StatusCodes.NOT_FOUND,
+      //   "server not found"
+      // );
+      return []
     }
     return response;
   } catch (error) {
@@ -274,7 +307,9 @@ export const getServerService = async (serverId, userId) => {
         "Not allowed"
       );
     }
-    return server;
+    const serverDetails =
+      discordServerRepository.getServerDetailsById(serverId);
+    return serverDetails;
   } catch (error) {
     console.log("get server service", error);
     throw error;
@@ -399,13 +434,10 @@ export const addMemberToServerService = async (
     }
 
     const isValidUser = await userRepository.getById(memberId);
-    if(!isValidUser){
-      throw new CustomError(
-        "User not found",
-        StatusCodes.NOT_FOUND
-      );
+    if (!isValidUser) {
+      throw new CustomError("User not found", StatusCodes.NOT_FOUND);
     }
-    console.log(isValidUser)
+    console.log(isValidUser);
     const isUserPartOfServerResponse = await isUserPartOfServer(
       server,
       memberId
@@ -427,7 +459,7 @@ export const addMemberToServerService = async (
       ...mailObject,
       to: isValidUser.email,
       subject: "You have been added to a Server",
-      text:`Congratulation ! you have successfully added in a server ${server.name}`
+      text: `Congratulation ! you have successfully added in a server ${server.name}`,
     });
 
     return response;
