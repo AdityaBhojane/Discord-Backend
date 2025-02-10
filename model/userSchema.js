@@ -49,7 +49,7 @@ userSchema.pre('save', function saveUser(next){
     const SALT = bcrypt.genSaltSync(8);
     const hashedPassword = bcrypt.hashSync(user.password, SALT);
     user.password = hashedPassword;
-    user.avatar = `https://robohash.org/${user.username}`;
+    // user.avatar = `https://robohash.org/${user.username}`;
     next();
 });
 

@@ -14,7 +14,11 @@ const channelSchema = new mongoose.Schema({
     categoryId:{
         type:mongoose.Schema.Types.ObjectId,
         ref:"Category",
-    }
+    },
+    joinedUsers:{
+        type:Number,
+        default:0,
+    },
 },
 {timestamps:true});
 
