@@ -1,5 +1,6 @@
 import { StatusCodes } from "http-status-codes";
 import {
+  addMemberToServerByJoinCode,
   addMemberToServerService,
   addNewCategoryToServerService,
   addNewChannelToServerService,
@@ -151,12 +152,37 @@ export const addNewChannelToCategoryController = async (req, res) => {
 
 export const addMemberToServerController = async (req, res) => {
   try {
+    console.log("USER",req.user)
     const response = await addMemberToServerService(
       req.params.serverId,
       req.body.memberId,
       req.body.role || 'member',
       req.user
-    )
+    );
+    return res
+    .status(StatusCodes.OK)
+    .json(customSuccessResponse("member created successfully", response));
+  } catch (error) {
+    console.log("add category controller error", error);
+    return res
+      .status(StatusCodes.FORBIDDEN)
+      .json(
+        customErrorResponse(
+          "something is wrong with add add user controller",
+          error
+        )
+      );
+  }
+};
+
+export const addMemberToServerByJoinCodeController = async (req, res) => {
+  try {
+    console.log("details", req.params.serverId, req.user)
+    const response = await addMemberToServerByJoinCode(
+      req.params.serverId,
+      req.body.role || 'member',
+      req.user
+    );
     return res
     .status(StatusCodes.OK)
     .json(customSuccessResponse("member created successfully", response));

@@ -469,4 +469,55 @@ export const addMemberToServerService = async (
   }
 };
 
-export const getServerByJoinCodeService = async () => {};
+export const addMemberToServerByJoinCode = async ( 
+  serverId,
+  role,
+  memberId
+  ) => {
+  try {
+    console.log("Details", serverId,memberId)
+    const server = await discordServerRepository.getById(serverId);
+    if (!server) {
+      throw new CustomError(
+        "server dost not exist",
+        StatusCodes.NOT_FOUND,
+        "Not Found"
+      );
+    }
+
+
+    const isValidUser = await userRepository.getById(memberId);
+    if (!isValidUser) {
+      throw new CustomError("User not found", StatusCodes.NOT_FOUND);
+    }
+    console.log(isValidUser);
+    const isUserPartOfServerResponse = await isUserPartOfServer(
+      server,
+      memberId
+    );
+    if (isUserPartOfServerResponse) {
+      throw new CustomError(
+        "User is already part of server",
+        StatusCodes.UNAUTHORIZED
+      );
+    }
+
+    const response = await discordServerRepository.addUserToServer(
+      serverId,
+      memberId,
+      role
+    );
+
+    // addEmailToMailQueue({
+    //   ...mailObject,
+    //   to: isValidUser.email,
+    //   subject: "You have been added to a Server",
+    //   text: `Congratulation ! you have successfully added in a server ${server.name}`,
+    // });
+
+    return response;
+  } catch (error) {
+    console.log("add channel service error", error);
+    throw error;
+  }
+};
