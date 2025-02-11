@@ -6,6 +6,7 @@ import { Server } from 'socket.io';
 import cors from 'cors';
 import ChannelSocketHandlers from './controllers/channelSocketController.js';
 import MessageSocketHandlers from './controllers/messageSocketController.js';
+import rateLimit from 'express-rate-limit';
 
 const app = express();
 const server = createServer(app);
@@ -15,7 +16,13 @@ const io = new Server(server, {
   }
 });
 
+const limiter = rateLimit({
+  windowMs: 0.5 * 60 * 1000, // 30 seconds
+  max: 10 // limit each IP to 5 requests per windowMs
+});
+
 app.use(cors());
+app.use(limiter);
 app.use(express.json());
 app.use("/api", apiRouter);
 
