@@ -56,11 +56,11 @@ A full-featured Discord clone built using the MERN stack (MongoDB, Express.js, R
 3. Start the backend server:
 
    ```
-   cd backend
+   cd Discord-Backend
    npm start
 
     // Same steps for frontend and 
-    cd backend
+    cd Discord-Frontend
     npm start
 
    ``` 
