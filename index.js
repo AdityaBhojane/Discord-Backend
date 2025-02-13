@@ -18,7 +18,7 @@ const io = new Server(server, {
 
 const limiter = rateLimit({
   windowMs: 0.5 * 60 * 1000, // 30 seconds
-  max: 10 // limit each IP to 5 requests per windowMs
+  max: 30 // limit each IP to 5 requests per windowMs
 });
 
 app.use(cors());
@@ -33,17 +33,16 @@ app.get("/ping", (req, res) => {
   });
 });
 
+const emailToSocket = new Map();
+const socketToEmail = new Map();
+
+
 io.on('connection', (socket) => {
   console.log('a user connected', socket.id);
   MessageSocketHandlers(io, socket);
   ChannelSocketHandlers(io, socket);
-});
 
 
-const emailToSocket = new Map();
-const socketToEmail = new Map();
-
-io.on("connection", (socket) => {
 //   console.log("socket connected", socket);
   socket.on("join-room", (data) => {
     // console.log(data);
